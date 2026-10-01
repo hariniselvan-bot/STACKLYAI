@@ -69,10 +69,10 @@ if(window.gsap&&!reduced){
     a.addEventListener('click',e=>{
       const url=new URL(a.href); if(url.pathname===location.pathname)return;
       e.preventDefault();
-      gsap.to('body',{opacity:0,y:-14,filter:'blur(6px)',duration:.4,ease:'power2.in',onComplete:()=>location.href=a.href});
+      gsap.to('main',{opacity:0,y:-14,filter:'blur(6px)',duration:.4,ease:'power2.in',onComplete:()=>location.href=a.href});
     });
   });
-  addEventListener('pageshow',e=>{if(e.persisted)gsap.set('body',{opacity:1,y:0,filter:'none'});});
+  addEventListener('pageshow',e=>{if(e.persisted)gsap.set('main',{opacity:1,y:0,filter:'none'});});
 }
 
 /* ---------- Custom cursor ---------- */
