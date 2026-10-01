@@ -1,8 +1,11 @@
 /* =========================================================
    STACKLY — navigation.js
-   Mobile menu accessibility
-   404 smart back navigation
-   Previous page + section restoration
+
+   Handles:
+   - Mobile menu accessibility
+   - ESC key
+   - 404 previous page storage
+   - Navigation restoration after Back / Forward
    ========================================================= */
 
 (function () {
@@ -11,7 +14,7 @@
 
 
     /* =========================================================
-       HELPER
+       HELPERS
        ========================================================= */
 
     const $ = (selector, context = document) => {
@@ -20,24 +23,25 @@
 
 
     /* =========================================================
-       MOBILE MENU — ESC TO CLOSE
+       MOBILE MENU — ESC
        ========================================================= */
 
-    window.addEventListener("keydown", function (e) {
+    document.addEventListener("keydown", function (event) {
+
+        if (event.key !== "Escape") {
+            return;
+        }
 
         const mobileMenu = $(".mobile-menu");
+        const burger = $(".burger");
 
         if (
-            e.key === "Escape" &&
             mobileMenu &&
-            mobileMenu.classList.contains("open")
+            mobileMenu.classList.contains("open") &&
+            burger
         ) {
 
-            const burger = $(".burger");
-
-            if (burger) {
-                burger.click();
-            }
+            burger.click();
 
         }
 
@@ -45,7 +49,7 @@
 
 
     /* =========================================================
-       MOBILE MENU — ACCESSIBILITY
+       MOBILE MENU ACCESSIBILITY
        ========================================================= */
 
     const burger = $(".burger");
@@ -54,58 +58,48 @@
 
     if (burger && mobileMenu) {
 
-        const menuObserver = new MutationObserver(function () {
+        const menuObserver =
+            new MutationObserver(function () {
 
-            if (mobileMenu.classList.contains("open")) {
+                if (
+                    mobileMenu.classList.contains("open")
+                ) {
 
-                /*
-                 * Return focus to the burger when
-                 * the mobile menu opens.
-                 */
-                burger.focus();
+                    /*
+                     * Keep focus accessible.
+                     */
+                    burger.focus();
 
+                }
+
+            });
+
+
+        menuObserver.observe(
+            mobileMenu,
+            {
+                attributes: true,
+                attributeFilter: ["class"]
             }
-
-        });
-
-
-        menuObserver.observe(mobileMenu, {
-            attributes: true,
-            attributeFilter: ["class"]
-        });
+        );
 
     }
 
 
     /* =========================================================
-       404 — SAVE CURRENT PAGE
-       =========================================================
-       
-       Call this function whenever a link/action sends
-       the user to 404.html.
-
-       Example:
-
-       save404PreviousPage();
-       window.location.href = "404.html";
-
-       The complete URL is saved, including:
-
-       index.html#services
-       service.html#pricing
-       about.html#team
-       blog.html#latest
-       
+       404 — SAVE PREVIOUS PAGE
        ========================================================= */
 
     window.save404PreviousPage = function () {
 
         try {
 
-            const currentURL = window.location.href;
+            const currentURL =
+                window.location.href;
+
 
             /*
-             * Don't save 404 itself.
+             * Never save 404.html itself.
              */
             if (
                 currentURL &&
@@ -122,7 +116,7 @@
         } catch (error) {
 
             console.warn(
-                "Stackly: Unable to save 404 previous page.",
+                "Stackly: Could not save previous page.",
                 error
             );
 
@@ -132,138 +126,105 @@
 
 
     /* =========================================================
-       404 — SMART GO BACK
+       RESTORE NAVIGATION STATE
        ========================================================= */
 
-    const back404 = $("[data-back]");
+    function restoreNavigationState() {
+
+        const nav = $(".nav");
+
+        if (!nav) {
+            return;
+        }
 
 
-    if (back404 && back404.dataset.stacklyBackBound !== "true") {
+        /*
+         * IMPORTANT:
+         *
+         * We DO NOT change:
+         *
+         * position
+         * top
+         * transform
+         * width
+         *
+         * because those are controlled by CSS.
+         */
 
-        back404.dataset.stacklyBackBound = "true";
 
-        back404.addEventListener("click", function (event) {
+        const scrollY =
+            window.scrollY ||
+            window.pageYOffset ||
+            document.documentElement.scrollTop ||
+            0;
 
-            event.preventDefault();
 
-            if (back404.dataset.processing === "true") {
-                return;
-            }
+        /*
+         * Restore the same class that main.js uses.
+         */
+        if (scrollY > 40) {
 
-            back404.dataset.processing = "true";
+            nav.classList.add("scrolled");
 
-            if (window.history.length > 1) {
-                window.history.back();
-                return;
-            }
+        } else {
 
-            let previousPage = null;
+            nav.classList.remove("scrolled");
 
-            try {
+        }
 
-                previousPage = sessionStorage.getItem("404PreviousPage");
 
-            } catch (error) {
-
-                console.warn(
-                    "Stackly: Unable to read 404 previous page.",
-                    error
-                );
-
-            }
-
-            if (previousPage) {
-
-                try {
-
-                    sessionStorage.removeItem("404PreviousPage");
-
-                } catch (error) {
-
-                    console.warn(
-                        "Stackly: Unable to clear 404 history.",
-                        error
-                    );
-
-                }
-
-                window.location.href = previousPage;
-
-                return;
-
-            }
-
-            const referrer = document.referrer || "";
-
-            if (
-                referrer &&
-                !referrer.includes("/404.html")
-            ) {
-
-                window.location.href = referrer;
-
-                return;
-
-            }
-
-            window.location.href = "index.html";
-
-        });
+        /*
+         * Tell other Stackly scripts that the
+         * page has been restored.
+         */
+        window.dispatchEvent(
+            new CustomEvent(
+                "stackly:navigation-restored"
+            )
+        );
 
     }
 
 
     /* =========================================================
-       PAGE RESTORATION
-       =========================================================
+       PAGE SHOW
        
-       This runs when the browser restores a page using
-       back/forward navigation.
+       Important for:
 
-       Useful for:
-       - Fixed headers
-       - Scroll state
-       - Hash sections
-       - Mobile navigation
-       
+       Page → 404 → Back
+
+       and browser BFCache restoration.
        ========================================================= */
-
-    function refreshNavigationState() {
-
-        /*
-         * Dispatch a custom event.
-         *
-         * Your main.js/header code can listen to this if needed.
-         */
-        window.dispatchEvent(
-            new CustomEvent("stackly:navigation-restored")
-        );
-
-    }
-
 
     window.addEventListener(
         "pageshow",
         function () {
 
             /*
-             * Wait for browser scroll restoration.
+             * Restore immediately.
+             */
+            restoreNavigationState();
+
+
+            /*
+             * Browser may restore scroll position
+             * shortly after pageshow.
              */
             setTimeout(
-                refreshNavigationState,
+                restoreNavigationState,
                 50
             );
 
 
             setTimeout(
-                refreshNavigationState,
-                300
+                restoreNavigationState,
+                250
             );
 
 
             setTimeout(
-                refreshNavigationState,
-                700
+                restoreNavigationState,
+                600
             );
 
         }
@@ -278,10 +239,36 @@
         "hashchange",
         function () {
 
-            refreshNavigationState();
+            setTimeout(
+                restoreNavigationState,
+                50
+            );
 
         }
     );
+
+
+    /* =========================================================
+       INITIAL LOAD
+       ========================================================= */
+
+    if (
+        document.readyState === "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            restoreNavigationState,
+            {
+                once: true
+            }
+        );
+
+    } else {
+
+        restoreNavigationState();
+
+    }
 
 
 })();

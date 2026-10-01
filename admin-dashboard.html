@@ -1762,7 +1762,147 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 }
 </style>
+<!-- STACKLY DASHBOARD DATA + CTA VISIBILITY FIX -->
+<style id="stackly-global-visibility-fix">
 
+  /* =========================================
+     FIX: DASHBOARD DATA CARDS
+     Removes the excessive empty card height
+     ========================================= */
+
+  .dashboard-subgrid .mini-panel{
+    min-height:180px !important;
+    height:auto !important;
+  }
+
+  /* Keep the bottom metric/data visible */
+  .dashboard-subgrid .mini-panel b{
+    margin-top:20px !important;
+  }
+
+
+  /* =========================================
+     FIX: CTA BUTTONS
+     Makes CTA text visible on light theme
+     ========================================= */
+
+  .section-heading .heading-action{
+    background:#fffdf9 !important;
+    color:#4d3828 !important;
+    border:1px solid rgba(111,81,56,.24) !important;
+    box-shadow:0 4px 14px rgba(76,56,40,.06) !important;
+
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+
+  .section-heading .heading-action:hover{
+    background:#f4ede3 !important;
+    color:#4d3828 !important;
+  }
+
+
+  /* =========================================
+     FIX: CTA BUTTON TEXT
+     ========================================= */
+
+  .heading-action,
+  .heading-action *{
+    color:#4d3828 !important;
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+
+
+  /* =========================================
+     FIX: CARD DATA VISIBILITY
+     ========================================= */
+
+  .mini-panel h3,
+  .mini-panel strong,
+  .mini-panel span,
+  .mini-panel b{
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+
+  .mini-panel h3{
+    color:#7e8189 !important;
+  }
+
+  .mini-panel strong{
+    color:#302a25 !important;
+  }
+
+  .mini-panel span{
+    color:#92949c !important;
+  }
+
+  .mini-panel b{
+    color:#666971 !important;
+  }
+
+
+  /* =========================================
+     FIX: KPI / STAT DATA
+     ========================================= */
+
+  .kpi-card h3,
+  .kpi-card strong,
+  .kpi-card small,
+  .stat-card .stat-label,
+  .stat-card .stat-value,
+  .stat-card .stat-change{
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+
+
+  /* =========================================
+     FIX: TABLE DATA
+     ========================================= */
+
+  .data-table,
+  .data-table th,
+  .data-table td,
+  .mini-data-table,
+  .mini-data-table span{
+    opacity:1 !important;
+    visibility:visible !important;
+  }
+
+
+  /* =========================================
+     RESPONSIVE
+     ========================================= */
+
+  @media (max-width:760px){
+
+    .dashboard-subgrid .mini-panel{
+      min-height:160px !important;
+    }
+
+    .section-heading .heading-action{
+      opacity:1 !important;
+      visibility:visible !important;
+    }
+
+  }
+
+  @media (max-width:360px){
+
+    .dashboard-subgrid .mini-panel{
+      min-height:150px !important;
+    }
+
+    .section-heading .heading-action{
+      width:100%;
+      text-align:center;
+    }
+
+  }
+
+</style>
 </head>
 
 <body>

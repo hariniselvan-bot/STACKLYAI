@@ -552,3 +552,12 @@ table.compare{width:100%;border-collapse:collapse;font-size:.88rem;min-width:640
 .mobile-menu a.mm-link span{display:none}
 .mobile-menu a.mm-link.active{background:rgba(125,20,45,.08);color:#7d142d;font-weight:600}
 .mobile-menu a.mm-link.active::before{content:none}
+.nav {
+    position: fixed;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: min(1240px,94%);
+    /* rest of your existing properties */
+}
